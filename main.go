@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"roxscan/scrapping"
 
 	"github.com/joho/godotenv"
 )
@@ -13,47 +17,39 @@ func main() {
 	bucketKeyPath := "./gcp-bucket-key.json"
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", bucketKeyPath)
 
-	url := "https://www.nfce.fazenda.sp.gov.br/qrcode?p=35250702314041000692650090000027411399151615|2|1|1|DA44317D44D06DCB9AABFBB84EE5373F19004CF7"
-	resp, err := http.Get(url)
+	file, err := os.Open("qrcodes.csv")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("falha ao abrir o arquivo qrcodes.csv: %v", err))
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		panic("falha ao acessar a SEFAZ: " + resp.Status)
-	}
+	defer file.Close()
 
-	outFile, err := os.Create("./output.html")
-	if err != nil {
-		panic(err)
-	}
-	defer outFile.Close()
+	reader := csv.NewReader(file)
+	for {
+		record, err := reader.Read()
+		if err != nil {
+			break
+		}
 
-	_, err = outFile.ReadFrom(resp.Body)
-	if err != nil {
-		panic(err)
+		url := record[0]
+
+		resp, err := http.Get(url)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			panic("falha ao acessar a SEFAZ: " + resp.Status)
+		}
+
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
+		htmlContent := string(bodyBytes)
+
+		total, cnpj := scrapping.Scrap(htmlContent)
+		fmt.Printf("Total: %s\nCNPJ: %s\n", total, cnpj)
+
+		// time.Sleep(10 * time.Millisecond)
 	}
 }
-
-// err := bucket.UploadFile("roxwallet-bucket", "nota-test-1.png", "./nfces/nota-test-1.png")
-// if err != nil {
-// 	panic(err)
-// }
-
-// imgBytes, err := bucket.DownloadFile("roxwallet-bucket", "nota-test-1.png")
-// if err != nil {
-// 	panic(err)
-// }
-
-// filepath := "./nfces/nota-test-1.png"
-// imgBytes, err := os.ReadFile(filepath)
-// if err != nil {
-// 	panic(fmt.Sprintf("falha ao ler o arquivo %s: %v", filepath, err))
-// }
-
-// url, err := qrcode.FindAndDrawQRCode_Safe(imgBytes)
-// if err != nil {
-// 	panic(fmt.Errorf("erro ao decodificar QR Code: %w", err))
-// }
-
-// fmt.Println(url)

@@ -15,6 +15,8 @@ import (
 	"gocv.io/x/gocv"
 )
 
+// None of these functions really work.
+
 func Decode(imageBytes []byte) (url string, err error) {
 	// 1. Decodifica o []byte para um objeto image.Image
 	img, _, err := image.Decode(bytes.NewReader(imageBytes))
@@ -149,7 +151,7 @@ func FindAndDrawQRCode_Safe(imageBytes []byte) (result string, err error) {
 
 		numPoints := points.Rows()
 		pts := make([]image.Point, numPoints)
-		for i := 0; i < numPoints; i++ {
+		for i := range numPoints {
 			x := points.GetFloatAt(i, 0)
 			y := points.GetFloatAt(i, 1)
 			pts[i] = image.Pt(int(x), int(y))
