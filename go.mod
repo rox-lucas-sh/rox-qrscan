@@ -7,12 +7,12 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/makiuchi-d/gozxing v0.1.1
 	gocv.io/x/gocv v0.41.0
+	google.golang.org/genai v1.18.0
 )
 
 require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	google.golang.org/genai v1.18.0 // indirect
 )
 
 require (
