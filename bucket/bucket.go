@@ -20,7 +20,7 @@ import (
 // defer file.Close()
 // scrapping.ScrapFromFile(file)
 
-var BucketName = "roxwallet-bucket"
+var BucketName = "bucket-test-rox"
 
 func DownloadFile(bucket, object string) ([]byte, error) {
 	// `context.Background()` é um bom ponto de partida.
@@ -84,5 +84,29 @@ func UploadFile(bucket, object, filePath string) error {
 	}
 
 	fmt.Printf("Arquivo %q enviado com sucesso para o bucket %q como %q.\n", filePath, bucket, object)
+	return nil
+}
+
+func UploadImage(bucket, objectName string, image io.Reader) error {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("falha ao criar cliente do storage: %w", err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
+
+	wc := client.Bucket(bucket).Object(objectName).NewWriter(ctx)
+	if _, err = io.Copy(wc, image); err != nil {
+		return fmt.Errorf("falha ao copiar imagem: %w", err)
+	}
+
+	if err := wc.Close(); err != nil {
+		return fmt.Errorf("falha ao fechar writer: %w", err)
+	}
+
+	fmt.Printf("Imagem %q enviada com sucesso para o bucket %q.\n", objectName, bucket)
 	return nil
 }

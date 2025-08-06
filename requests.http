@@ -1,0 +1,21 @@
+POST http://localhost:8080/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="nota-test-1.png"
+Content-Type: image/png
+
+< ./nfces/nota-test-2.png
+--boundary--
+
+
+# nfces/nfce-1754503579-MjAyNS
+
+
+### Scan with genai
+POST http://localhost:8080/scan/ocr
+Content-Type: application/json
+
+{
+  "image_id": "nfces/nfce-1754503579-MjAyNS"
+}
