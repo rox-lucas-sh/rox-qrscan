@@ -1,4 +1,4 @@
 tmp/
 main
 gcp-bucket-key.json
-mug_generated/
+mug_generated

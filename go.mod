@@ -4,7 +4,6 @@ go 1.23.7
 
 require (
 	cloud.google.com/go/storage v1.55.0
-	github.com/joho/godotenv v1.5.1
 	github.com/makiuchi-d/gozxing v0.1.1
 	gocv.io/x/gocv v0.41.0
 	google.golang.org/genai v1.18.0
