@@ -13,8 +13,18 @@ type scanInput struct {
 	ImageId string `json:"image_id"`
 }
 
-// mug:handler POST /scan/ocr
+// mug:handler /scan/ocr
 func ScanGenAIHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	input := scanInput{}
 	err := json.NewDecoder(r.Body).Decode(&input) // Decode request body if needed
 	if err != nil {
@@ -29,9 +39,7 @@ func ScanGenAIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Scan output:", output)
-	json.NewEncoder(w).Encode(map[string]string{
-		"output": output,
-	})
+	fmt.Fprintln(w, output)
 }
 
 func ScanGenAi(imageBucketId string) (output string, err error) {
@@ -46,4 +54,25 @@ func ScanGenAi(imageBucketId string) (output string, err error) {
 	}
 
 	return output, nil
+}
+
+func ValidateOutput(generated string) (mod string, err error) {
+	var body vertex.NotaFiscal
+	err = json.Unmarshal([]byte(generated), &body)
+	if err != nil {
+		return "", fmt.Errorf("invalid parsing of OCR content: %v", err)
+	}
+
+	total := 0.0
+	for _, item := range body.Itens {
+		total += item.PrecoTotalItem
+	}
+	dif := total - body.ValorTotal
+	if dif > 0.1 || dif < -0.1 {
+		return "", fmt.Errorf("value divergence after OCR parsing; " +
+			"the total value does not match the read itens individual values",
+		)
+	}
+
+	return generated, nil
 }
