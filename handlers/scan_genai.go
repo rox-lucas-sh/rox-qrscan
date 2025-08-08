@@ -22,17 +22,9 @@ func ScanGenAIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageBytes, err := bucket.DownloadFile(bucket.BucketName, input.ImageId)
+	output, err := ScanGenAi(input.ImageId)
 	if err != nil {
-		fmt.Println("Error downloading file:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	output, err := vertex.Scan(bytes.NewReader(imageBytes))
-	if err != nil {
-		fmt.Println("Error scanning image:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error scanning image: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -40,4 +32,18 @@ func ScanGenAIHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"output": output,
 	})
+}
+
+func ScanGenAi(imageBucketId string) (output string, err error) {
+	imageBytes, err := bucket.DownloadFile(bucket.BucketName, imageBucketId)
+	if err != nil {
+		return "", fmt.Errorf("error downloading file: %w", err)
+	}
+
+	output, err = vertex.Scan(bytes.NewReader(imageBytes))
+	if err != nil {
+		return "", fmt.Errorf("error scanning image: %w", err)
+	}
+
+	return output, nil
 }
