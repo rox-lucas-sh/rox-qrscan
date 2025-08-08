@@ -1,0 +1,22 @@
+// This is a generated package. It's not intended to be edited manually.
+// This is intended to be generated using the `mug` command.
+// It is used to initialize the package and can contain any necessary setup code.
+package cup_router
+
+import (
+	"fmt"
+	"net/http"
+	"roxscan/handlers"
+)
+
+func init() {
+	// handlers are registered here:
+	http.HandleFunc("POST /upload", handlers.UploadHandler)
+	http.HandleFunc("POST /scan/ocr", handlers.ScanGenAIHandler)
+
+}
+
+func Route(addr string) {
+	fmt.Printf("\033[32mStarting server on :%s\033[0m\n", addr)
+	http.ListenAndServe(fmt.Sprintf(":%s", addr), nil)
+}
